@@ -60,22 +60,6 @@ public interface BloomFilterGated<T> {
     boolean isFull();
 
     /**
-     * Calculates the hamming distance from the gate filter to a BloomFilter.
-     *
-     * @param filter The filter to calculate distance to.
-     * @return the distance
-     */
-    int distance(BloomFilter filter);
-
-    /**
-     * Calculates the hamming distance to a ProtoBloomFilter.
-     *
-     * @param proto The proto filter to calculate distance to.
-     * @return the distance
-     */
-    int distance(ProtoBloomFilter proto);
-
-    /**
      * Returns true {@code gate & filter == gate }.
      *
      * @param filter The filter to look for.

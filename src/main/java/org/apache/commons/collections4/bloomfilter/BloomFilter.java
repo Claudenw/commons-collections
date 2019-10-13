@@ -48,16 +48,6 @@ public interface BloomFilter {
     boolean matches(BloomFilter other);
 
     /**
-     * Calculates the hamming distance from this Bloom filter to the other. The hamming
-     * distance is defined as {@code this xor other} and is the number of bits that have
-     * to be flipped to convert one filter to the other.
-     *
-     * @param other The other Bloom filter to calculate the distance to.
-     * @return the distance.
-     */
-    int distance(BloomFilter other);
-
-    /**
      * Gets the hamming weight for this filter.
      *
      * This is the number of bits that are on in the filter.
@@ -65,15 +55,6 @@ public interface BloomFilter {
      * @return The hamming weight.
      */
     int getHammingWeight();
-
-    /**
-     * Gets the log2 (log base 2) of this Bloom filter. This is the base 2 logarithm of
-     * this Bloom filter if the bits in this filter were considers the bits in an unsigned
-     * integer.
-     *
-     * @return the base 2 logarithm
-     */
-    double getLog();
 
     /**
      * Merges this Bloom filter with the other creating a new filter.

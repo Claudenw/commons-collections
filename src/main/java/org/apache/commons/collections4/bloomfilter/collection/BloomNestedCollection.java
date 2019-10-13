@@ -30,6 +30,7 @@ import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.bloomfilter.BloomFilter;
 import org.apache.commons.collections4.bloomfilter.BloomFilterConfiguration;
+import org.apache.commons.collections4.bloomfilter.BloomFilterFunctions;
 import org.apache.commons.collections4.bloomfilter.ProtoBloomFilter;
 import org.apache.commons.collections4.bloomfilter.StandardBloomFilter;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -153,16 +154,6 @@ public final class BloomNestedCollection<T> implements BloomFilterGated<T>, Coll
     }
 
     @Override
-    public int distance(BloomFilter filter) {
-        return collectionConfig.getGate().distance(filter);
-    }
-
-    @Override
-    public int distance(ProtoBloomFilter proto) {
-        return distance(fromProto(proto));
-    }
-
-    @Override
     public boolean matches(BloomFilter filter) {
         return collectionConfig.getGate().matches(filter);
     }
@@ -209,7 +200,7 @@ public final class BloomNestedCollection<T> implements BloomFilterGated<T>, Coll
                 return false;
             }
             if (!candidate.isFull()) {
-                int candidateDist = candidate.distance(bf);
+                int candidateDist = BloomFilterFunctions.getHammingDistance(candidate.getGate(),bf);
                 if (candidateDist < dist) {
                     bucket = candidate;
                     dist = candidateDist;
