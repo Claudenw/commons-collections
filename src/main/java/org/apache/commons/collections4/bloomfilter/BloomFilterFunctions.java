@@ -47,10 +47,10 @@ public final class BloomFilterFunctions {
      * Gets the approximate log for this filter. If the Bloom filter is considered as an
      * unsigned number what is the approximate base 2 log of that value.
      *
-     * @param bitset The bitset to estimate from.
+     * @param bitSet The bitset to estimate from.
      * @return the approximate log.
      */
-    private static double getApproximateLog(BitSet bitSet) {
+    public static double getApproximateLog(BitSet bitSet) {
         return getApproximateLog(bitSet, Integer.min(bitSet.length(), MAX_LOG_DEPTH));
     }
 

@@ -70,14 +70,14 @@ public class BloomFilterFunctionsTest {
         }
     }
     @Test
-    public void getLogTest_NoValues() {
+    public void getLogTest_Bloom_NoValues() {
         BitSet bs = new BitSet();
         BloomFilter bf = new StandardBloomFilter(bs);
         assertEquals(0.0, BloomFilterFunctions.getApproximateLog(bf), 0.0000001);
     }
 
     @Test
-    public void getLogTest() {
+    public void getLogTest_Bloom() {
         BitSet bs = new BitSet();
         bs.set(2);
         BloomFilter bf = new StandardBloomFilter(bs);
@@ -89,7 +89,7 @@ public class BloomFilterFunctionsTest {
     }
 
     @Test
-    public void getLogTest_largeBitSpacing() {
+    public void getLogTest_Bloom_largeBitSpacing() {
         BitSet bs = new BitSet();
         bs.set(2);
         bs.set(40);
@@ -100,7 +100,7 @@ public class BloomFilterFunctionsTest {
     }
 
     @Test
-    public void getLogTest_FullBuffer() {
+    public void getLogTest_Bloom_FullBuffer() {
         BitSet bs = new BitSet();
         for (int i = 0; i < 28; i++) {
             bs.set(i);
@@ -109,6 +109,42 @@ public class BloomFilterFunctionsTest {
         BloomFilter bf = new StandardBloomFilter(bs);
 
         assertEquals(27.9999999, BloomFilterFunctions.getApproximateLog(bf), 0.0000001);
+    }
+
+    @Test
+    public void getLogTest_Bit_NoValues() {
+        BitSet bs = new BitSet();
+        assertEquals(0.0, BloomFilterFunctions.getApproximateLog(bs), 0.0000001);
+    }
+
+    @Test
+    public void getLogTest_Bit() {
+        BitSet bs = new BitSet();
+        bs.set(2);
+        assertEquals(2.0, BloomFilterFunctions.getApproximateLog(bs), 0.0000001);
+
+        bs.set(20);
+        assertEquals(20.000003814697266, BloomFilterFunctions.getApproximateLog(bs), 0.000000000000001);
+    }
+
+    @Test
+    public void getLogTest_Bit_largeBitSpacing() {
+        BitSet bs = new BitSet();
+        bs.set(2);
+        bs.set(40);
+        // show it is approximate bit 40 and bit 2 yeilds same as 40 alone
+
+        assertEquals(40.0, BloomFilterFunctions.getApproximateLog(bs), 0.000000000000001);
+    }
+
+    @Test
+    public void getLogTest_Bit_FullBuffer() {
+        BitSet bs = new BitSet();
+        for (int i = 0; i < 28; i++) {
+            bs.set(i);
+        }
+
+        assertEquals(27.9999999, BloomFilterFunctions.getApproximateLog(bs), 0.0000001);
     }
 
 
