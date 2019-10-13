@@ -153,32 +153,6 @@ public abstract class AbstractBloomFilterGatedNoDuplicatesTest {
 
     }
 
-    @Test
-    public final void distance_Filter() {
-        assertEquals( 0, gated.distance( StandardBloomFilter.EMPTY ) );
-        ProtoBloomFilter proto = FUNC.apply("Hello");
-        StandardBloomFilter filter = new StandardBloomFilter( proto, gated.getGateConfig() );
-
-        assertEquals( filter.getHammingWeight(), gated.distance( filter ));
-
-        gated.add( proto, "Hello");
-
-        assertEquals( 0, gated.distance( filter ));
-
-    }
-
-    @Test
-    public final void distance_Proto() {
-        assertEquals( 0, gated.distance( StandardBloomFilter.EMPTY ) );
-        ProtoBloomFilter proto = FUNC.apply("Hello");
-        BloomFilter filter = new StandardBloomFilter( proto, gated.getGateConfig() );
-
-        assertEquals( filter.getHammingWeight(), gated.distance( proto ));
-
-        gated.add( proto, "Hello");
-
-        assertEquals( 0, gated.distance( proto ));
-    }
 
     @Test
     public final void getCandidates_Filter() {
