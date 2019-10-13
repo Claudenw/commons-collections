@@ -216,7 +216,7 @@ public final class BloomFilterConfiguration {
      * @param numberOfBits the number of bits in the filter.
      * @return the optimal number of hash functions.
      */
-    private final int calculateNumberOfHashFunctions(int numberOfItems, int numberOfBits)
+    private int calculateNumberOfHashFunctions(int numberOfItems, int numberOfBits)
     {
         /*
          * k = round((m / n) * log(2)) We change order so that we use real math rather
@@ -244,7 +244,7 @@ public final class BloomFilterConfiguration {
      * @param numberOfHashFunctions the number of hash functions used to create the filter.
      * @return the probability of collision.
      */
-    private final double calculateProbability(int numberOfItems, int numberOfBits, int numberOfHashFunctions) {
+    private double calculateProbability(int numberOfItems, int numberOfBits, int numberOfHashFunctions) {
         // (1 - exp(-kn/m))^k
         double p = Math.pow(1.0 - Math.exp(-1.0 * numberOfHashFunctions * numberOfItems / numberOfBits),
             numberOfHashFunctions);

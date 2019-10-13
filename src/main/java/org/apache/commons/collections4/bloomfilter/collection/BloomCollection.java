@@ -21,14 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.bloomfilter.BloomFilter;
 import org.apache.commons.collections4.bloomfilter.BloomFilterConfiguration;
-import org.apache.commons.collections4.bloomfilter.BloomFilterFunctions;
 import org.apache.commons.collections4.bloomfilter.ProtoBloomFilter;
 import org.apache.commons.collections4.bloomfilter.StandardBloomFilter;
 
@@ -299,7 +297,7 @@ public final class BloomCollection<T> implements BloomFilterGated<T>, Collection
 
     @Override
     public Stream<T> getCandidates(ProtoBloomFilter proto) {
-        return (fromProto(proto).matches(config.getGate())) ? getData() : Stream.empty();
+        return fromProto(proto).matches(config.getGate()) ? getData() : Stream.empty();
     }
 
 }

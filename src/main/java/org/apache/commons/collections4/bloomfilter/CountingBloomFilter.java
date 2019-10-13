@@ -74,7 +74,7 @@ public class CountingBloomFilter extends StandardBloomFilter {
      * @param enabledBits the bits that are enabled.
      * @return The BitSet.
      */
-    private static final BitSet bitsetFromMap(Set<Integer> enabledBits) {
+    private static BitSet bitsetFromMap(Set<Integer> enabledBits) {
         BitSet result = new BitSet();
         for (Integer value : enabledBits) {
             result.set(value);
@@ -143,7 +143,7 @@ public class CountingBloomFilter extends StandardBloomFilter {
         Map<Integer, Integer> newCounts = new HashMap<Integer, Integer>(counts);
         // calculate the counts.
         other.getBitSet().stream().forEach(key -> {
-            int otherCount = (other instanceof CountingBloomFilter) ? ((CountingBloomFilter) other).counts.get(key) : 1;
+            int otherCount = other instanceof CountingBloomFilter ? ((CountingBloomFilter) other).counts.get(key) : 1;
 
             Integer count = newCounts.get(key);
             if (count == null) {
@@ -174,7 +174,7 @@ public class CountingBloomFilter extends StandardBloomFilter {
         TreeMap<Integer, Integer> newCounts = new TreeMap<Integer, Integer>(counts);
 
         other.getBitSet().stream().forEach(key -> {
-            int otherCount = (other instanceof CountingBloomFilter) ? ((CountingBloomFilter) other).counts.get(key) : 1;
+            int otherCount = other instanceof CountingBloomFilter ? ((CountingBloomFilter) other).counts.get(key) : 1;
             Integer count = newCounts.get(key);
             if (count != null) {
                 int c = count - otherCount;

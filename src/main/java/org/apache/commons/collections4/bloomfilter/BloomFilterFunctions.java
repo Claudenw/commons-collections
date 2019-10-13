@@ -183,13 +183,13 @@ public final class BloomFilterFunctions {
         if (cardA == 0 || cardB == 0) {
             return 0.0;
         }
-        double denom = Math.sqrt(cardA) * Math.sqrt(cardB);
-        if (denom == 0) {
-            return 0.0;
-        }
+        /*
+         * We don't have to check the denominator as at this point
+         * cardinality is an integer greater than 0.
+         */
         BitSet ab = bloomFilter1.getBitSet();
         ab.and(bloomFilter2.getBitSet());
-        return ab.cardinality() / denom;
+        return ab.cardinality() / (Math.sqrt(cardA) * Math.sqrt(cardB));
     }
 
     /**
