@@ -18,13 +18,11 @@ package org.apache.commons.collections4.bloomfilter;
 
 import java.util.BitSet;
 import java.util.NoSuchElementException;
-import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.function.IntConsumer;
 
 import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
 import org.apache.commons.collections4.bloomfilter.hasher.Shape;
-import org.apache.commons.collections4.bloomfilter.hasher.StaticHasher;
 
 /**
  * A counting Bloom filter using an array to track counts for each enabled bit
@@ -87,50 +85,6 @@ public class ArrayCountingBloomFilter extends AbstractBloomFilter implements Cou
     private int state;
 
     /**
-     * An iterator of all indexes with non-zero counts.
-     *
-     * <p>In the event that the filter state is invalid any index with a negative count
-     * will also be produced by the iterator.
-     */
-    private class IndexIterator implements PrimitiveIterator.OfInt {
-        /** The next non-zero index (or counts.length). */
-        private int next;
-
-        /**
-         * Create an instance.
-         */
-        IndexIterator() {
-            advance();
-        }
-
-        /**
-         * Advance to the next non-zero index.
-         */
-        void advance() {
-            while (next < counts.length && counts[next] == 0) {
-                next++;
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return next < counts.length;
-        }
-
-        @Override
-        public int nextInt() {
-            if (hasNext()) {
-                final int result = next++;
-                advance();
-                return result;
-            }
-            // Currently unreachable as the iterator is only used by
-            // the StaticHasher which iterates correctly.
-            throw new NoSuchElementException();
-        }
-    }
-
-    /**
      * Constructs an empty counting Bloom filter with the specified shape.
      *
      * @param shape the shape of the filter
@@ -175,20 +129,17 @@ public class ArrayCountingBloomFilter extends AbstractBloomFilter implements Cou
 
     @Override
     public boolean contains(BloomFilter other) {
-        // The AbstractBloomFilter implementation converts both filters to long[] bits.
-        // This would involve checking all indexes in this filter against zero.
-        // Ideally we use an iterator of bit indexes to allow fail-fast on the
-        // first bit index that is zero.
-        if (other instanceof ArrayCountingBloomFilter) {
-            verifyShape(other);
-            return contains(((ArrayCountingBloomFilter) other).iterator());
+        verifyShape(other);
+        try {
+            other.getBits(idx -> {
+                if (counts[idx] <= 0) {
+                    throw new NoSuchElementException();
+                }
+            });
+        } catch (NoSuchElementException e) {
+            return false;
         }
-
-        // Note:
-        // This currently creates a StaticHasher which stores all the indexes.
-        // It would greatly benefit from direct generation of the index iterator
-        // avoiding the intermediate storage.
-        return contains(other.getHasher());
+        return true;
     }
 
     @Override
@@ -224,19 +175,12 @@ public class ArrayCountingBloomFilter extends AbstractBloomFilter implements Cou
     }
 
     @Override
-    public StaticHasher getHasher() {
-        return new StaticHasher(iterator(), getShape());
-    }
-
-    /**
-     * Returns an iterator over the enabled indexes in this filter.
-     * Any index with a non-zero count is considered enabled.
-     * The iterator returns indexes in their natural order.
-     *
-     * @return an iterator over the enabled indexes
-     */
-    private PrimitiveIterator.OfInt iterator() {
-        return new IndexIterator();
+    public void getBits(IntConsumer consumer) {
+        for (int i = 0; i < counts.length; i++) {
+            if (counts[i] != 0) {
+                consumer.accept(i);
+            }
+        }
     }
 
     @Override

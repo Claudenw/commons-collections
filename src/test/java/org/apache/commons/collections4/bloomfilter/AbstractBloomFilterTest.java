@@ -16,13 +16,13 @@
  */
 package org.apache.commons.collections4.bloomfilter;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.PrimitiveIterator.OfInt;
 import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
 import java.util.ArrayList;
@@ -60,8 +60,10 @@ public abstract class AbstractBloomFilterTest {
         }
 
         @Override
-        public StaticHasher getHasher() {
-            return new StaticHasher(bits.stream().iterator(), getShape());
+        public void getBits( IntConsumer consumer ) {
+            for (int idx = bits.nextSetBit(0); idx >= 0; idx = bits.nextSetBit(idx+1)) {
+                consumer.accept(idx);
+            }
         }
 
         @Override
@@ -196,22 +198,7 @@ public abstract class AbstractBloomFilterTest {
         assertEquals(7, bf2.andCardinality(bf));
     }
 
-    /**
-     * Compare 2 static hashers to verify they have the same bits enabled.
-     *
-     * @param hasher1 the first static hasher.
-     * @param hasher2 the second static hasher.
-     */
-    private void assertSameBits(final StaticHasher hasher1, final StaticHasher hasher2) {
-        final OfInt iter1 = hasher1.iterator(shape);
-        final OfInt iter2 = hasher2.iterator(shape);
 
-        while (iter1.hasNext()) {
-            assertTrue("Not enough data in second hasher", iter2.hasNext());
-            assertEquals(iter1.nextInt(), iter2.nextInt());
-        }
-        assertFalse("Too much data in second hasher", iter2.hasNext());
-    }
 
     /**
      * Tests that cardinality is correct.
@@ -396,15 +383,14 @@ public abstract class AbstractBloomFilterTest {
      * Tests that the the hasher returned from getHasher() works correctly.
      */
     @Test
-    public final void getHasherTest() {
+    public final void getBitsWithIntConsumerTest() {
         final List<Integer> lst = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
         final StaticHasher hasher = new StaticHasher(lst.iterator(), shape);
         final BloomFilter bf = createFilter(hasher, shape);
 
-        final StaticHasher hasher2 = bf.getHasher();
-
-        assertEquals(shape, hasher2.getShape());
-        assertSameBits(hasher, hasher2);
+        List<Integer> result = new ArrayList<Integer>();
+        bf.getBits( result::add );
+        assertArrayEquals( lst.toArray(), result.toArray() );
     }
 
     /**

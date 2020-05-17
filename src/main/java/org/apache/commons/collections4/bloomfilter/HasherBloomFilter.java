@@ -16,17 +16,17 @@
  */
 package org.apache.commons.collections4.bloomfilter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.function.IntConsumer;
-
+import org.apache.commons.collections4.bloomfilter.hasher.HashFunctionIdentity;
 import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
 import org.apache.commons.collections4.bloomfilter.hasher.Shape;
-import org.apache.commons.collections4.bloomfilter.hasher.StaticHasher;
-import org.apache.commons.collections4.iterators.EmptyIterator;
-import org.apache.commons.collections4.iterators.IteratorChain;
 
 /**
  * A Bloom filter built on a single hasher. This filter type should only be used for small
@@ -42,7 +42,7 @@ public class HasherBloomFilter extends AbstractBloomFilter {
     /**
      * The internal hasher representation.
      */
-    private StaticHasher hasher;
+    private List<Hasher> hasher;
 
     /**
      * Constructs a HasherBloomFilter from a hasher and a shape.
@@ -51,14 +51,8 @@ public class HasherBloomFilter extends AbstractBloomFilter {
      * @param shape the shape of the Bloom filter.
      */
     public HasherBloomFilter(final Hasher hasher, final Shape shape) {
-        super(shape);
-        verifyHasher(hasher);
-        if (hasher instanceof StaticHasher) {
-            this.hasher = (StaticHasher) hasher;
-            verifyShape(this.hasher.getShape());
-        } else {
-            this.hasher = new StaticHasher(hasher, shape);
-        }
+        this(shape);
+        this.merge( hasher );
     }
 
     /**
@@ -68,13 +62,17 @@ public class HasherBloomFilter extends AbstractBloomFilter {
      */
     public HasherBloomFilter(final Shape shape) {
         super(shape);
-        this.hasher = new StaticHasher(EmptyIterator.emptyIterator(), shape);
+        this.hasher = new ArrayList<Hasher>();
     }
 
     @Override
     public int cardinality() {
-        return hasher.size();
+        Set<Integer> set = new HashSet<Integer>();
+        hasher.stream().map( h -> h.iterator( getShape() ))
+        .forEach( iter -> iter.forEachRemaining( (IntConsumer) set::add ));
+        return set.size();
     }
+
 
     @Override
     public boolean contains(final Hasher hasher) {
@@ -83,22 +81,29 @@ public class HasherBloomFilter extends AbstractBloomFilter {
         hasher.iterator(getShape()).forEachRemaining((IntConsumer) idx -> {
             set.add(idx);
         });
-        final OfInt iter = this.hasher.iterator(getShape());
-        while (iter.hasNext()) {
-            final int idx = iter.nextInt();
-            set.remove(idx);
-            if (set.isEmpty()) {
+        final RuntimeException noMoreBits = new RuntimeException();
+        try {
+            getBits(idx -> {
+                set.remove(idx);
+                if (set.isEmpty()) {
+                    throw noMoreBits;
+                }
+            });
+        } catch (RuntimeException e) {
+            if (e == noMoreBits) {
                 return true;
             }
+            throw e;
         }
         return false;
     }
 
     @Override
     public long[] getBits() {
-        if (hasher.size() == 0) {
+        if (hasher.isEmpty()) {
             return EMPTY;
         }
+
 
         // Note: This can be simplified if the StaticHasher exposed a getMaxIndex()
         // method. Since it maintains an ordered list of unique indices the maximum
@@ -107,15 +112,15 @@ public class HasherBloomFilter extends AbstractBloomFilter {
         // For now we assume that the long[] will have a positive length and at least
         // 1 bit set in the entire array.
 
-        final int n = (int) Math.ceil(hasher.getShape().getNumberOfBits() * (1.0 / Long.SIZE));
+        final int n = (int) Math.ceil(getShape().getNumberOfBits() * (1.0 / Long.SIZE));
         final long[] result = new long[n];
-        final OfInt iter = hasher.iterator(hasher.getShape());
-        iter.forEachRemaining((IntConsumer) idx -> {
+
+        hasher.stream().map(h -> h.iterator(getShape())).forEach(iter -> iter.forEachRemaining((IntConsumer) idx -> {
             BloomFilterIndexer.checkPositive(idx);
             final int buffIdx = BloomFilterIndexer.getLongIndex(idx);
             final long buffOffset = BloomFilterIndexer.getLongBit(idx);
             result[buffIdx] |= buffOffset;
-        });
+        }));
 
         int limit = result.length;
 
@@ -135,21 +140,45 @@ public class HasherBloomFilter extends AbstractBloomFilter {
     }
 
     @Override
-    public StaticHasher getHasher() {
-        return hasher;
+    public void getBits( IntConsumer consumer ) {
+        final Set<Integer> seen = new HashSet<Integer>();
+        hasher.stream().map(h -> h.iterator(getShape())).forEach(iter -> iter.forEachRemaining((IntConsumer) idx -> {
+            if (seen.add(idx)) {
+                consumer.accept(idx);
+            }
+        }));
     }
 
     @Override
     public boolean merge(final BloomFilter other) {
-        return merge(other.getHasher());
+        verifyShape( other );
+        Hasher hasher = new Hasher() {
+            BloomFilter wrapped = other;
+
+            @Override
+            public OfInt iterator(Shape shape) {
+                verifyShape( shape );
+                List<Integer> lst = new ArrayList<Integer>();
+                wrapped.getBits( lst::add );
+                int[] bits = new int[lst.size()];
+                for (int i = 0; i < lst.size(); i++) {
+                    bits[i] = lst.get(i);
+                }
+                return Arrays.stream(bits).iterator();
+            }
+
+            @Override
+            public HashFunctionIdentity getHashFunctionIdentity() {
+                return wrapped.getShape().getHashFunctionIdentity();
+            }
+        };
+        return merge(hasher);
     }
 
     @Override
     public boolean merge(final Hasher hasher) {
         verifyHasher(hasher);
-        final IteratorChain<Integer> iter = new IteratorChain<>(this.hasher.iterator(getShape()),
-            hasher.iterator(getShape()));
-        this.hasher = new StaticHasher(iter, getShape());
+        this.hasher.add( hasher );
         return true;
     }
 }

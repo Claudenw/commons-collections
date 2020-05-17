@@ -16,9 +16,10 @@
  */
 package org.apache.commons.collections4.bloomfilter;
 
+import java.util.function.IntConsumer;
+
 import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
 import org.apache.commons.collections4.bloomfilter.hasher.Shape;
-import org.apache.commons.collections4.bloomfilter.hasher.StaticHasher;
 
 /**
  * The interface that describes a Bloom filter.
@@ -48,12 +49,14 @@ public interface BloomFilter {
     long[] getBits();
 
     /**
-     * Creates a StaticHasher that contains the indexes of the bits that are on in this
-     * filter.
+     * Passes the indexes of the enabled bits in the filter to the consumer.
      *
-     * @return a StaticHasher for that produces this Bloom filter
+     * <p>The {@code consumer.accept()} method will be called once for each enabled
+     * bit in the BloomFilter.</p>
+     *
+     * @param consumer The consumer for the index values.
      */
-    StaticHasher getHasher();
+    void getBits(IntConsumer consumer);
 
     /**
      * Returns {@code true} if this filter contains the specified filter. Specifically this

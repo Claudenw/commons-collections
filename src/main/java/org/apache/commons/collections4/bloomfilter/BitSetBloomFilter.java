@@ -22,7 +22,6 @@ import java.util.function.IntConsumer;
 
 import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
 import org.apache.commons.collections4.bloomfilter.hasher.Shape;
-import org.apache.commons.collections4.bloomfilter.hasher.StaticHasher;
 
 /**
  * A bloom filter using a Java BitSet to track enabled bits. This is a standard
@@ -92,8 +91,10 @@ public class BitSetBloomFilter extends AbstractBloomFilter {
     }
 
     @Override
-    public StaticHasher getHasher() {
-        return new StaticHasher(bitSet.stream().iterator(), getShape());
+    public void getBits(IntConsumer consumer) {
+        for (int idx = bitSet.nextSetBit(0); idx >= 0; idx = bitSet.nextSetBit(idx+1)) {
+            consumer.accept(idx);
+        }
     }
 
     @Override
