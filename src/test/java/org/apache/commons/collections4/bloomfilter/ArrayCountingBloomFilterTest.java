@@ -35,7 +35,7 @@ import org.junit.Test;
 /**
  * Tests for the {@link ArrayCountingBloomFilter}.
  */
-public class ArrayCountingBloomFilterTest extends AbstractBloomFilterTest {
+public class ArrayCountingBloomFilterTest extends AbstractUpdatableBloomFilterTest {
 
     @Override
     protected ArrayCountingBloomFilter createEmptyFilter(final Shape shape) {
@@ -122,7 +122,7 @@ public class ArrayCountingBloomFilterTest extends AbstractBloomFilterTest {
     @Test
     public void mergeTest_Counts_CountingBloomFilter() {
         assertMerge(counts -> createFilter(new FixedIndexesTestHasher(shape, counts), shape),
-            BloomFilter::merge);
+            UpdatableBloomFilter::merge);
     }
 
     /**
@@ -131,7 +131,7 @@ public class ArrayCountingBloomFilterTest extends AbstractBloomFilterTest {
     @Test
     public void mergeTest_Counts_BloomFilter() {
         assertMerge(counts -> new BitSetBloomFilter(new FixedIndexesTestHasher(shape, counts), shape),
-            BloomFilter::merge);
+            UpdatableBloomFilter::merge);
     }
 
     /**
@@ -140,7 +140,7 @@ public class ArrayCountingBloomFilterTest extends AbstractBloomFilterTest {
     @Test
     public void mergeTest_Counts_Hasher() {
         assertMerge(counts -> new FixedIndexesTestHasher(shape, counts),
-            BloomFilter::merge);
+            UpdatableBloomFilter::merge);
     }
 
     /**
@@ -149,7 +149,7 @@ public class ArrayCountingBloomFilterTest extends AbstractBloomFilterTest {
     @Test
     public void mergeTest_Counts_Hasher_Duplicates() {
         assertMerge(counts -> new FixedIndexesTestHasher(shape, createDuplicates(counts)),
-            BloomFilter::merge);
+            UpdatableBloomFilter::merge);
     }
 
     /**

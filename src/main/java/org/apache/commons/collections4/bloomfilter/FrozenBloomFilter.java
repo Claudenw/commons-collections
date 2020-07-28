@@ -16,20 +16,27 @@
  */
 package org.apache.commons.collections4.bloomfilter;
 
-import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
-import org.apache.commons.collections4.bloomfilter.hasher.Shape;
+import java.util.Arrays;
+
 
 /**
- * Tests for the {@link BitSetBloomFilter}.
+ * An abstract BloomFilter that is not updatable but implements hashCode() and equals()
+ * such that the filter may be stored in a hash map or other similar collection.
+ * @since 4.5
  */
-public class BitSetBloomFilterTest extends AbstractUpdatableBloomFilterTest {
+public abstract class FrozenBloomFilter implements BloomFilter {
+
     @Override
-    protected BitSetBloomFilter createEmptyFilter(final Shape shape) {
-        return new BitSetBloomFilter(shape);
+    public final int hashCode() {
+        return Arrays.hashCode(getBits());
     }
 
     @Override
-    protected BitSetBloomFilter createFilter(final Hasher hasher, final Shape shape) {
-        return new BitSetBloomFilter(hasher, shape);
+    public final boolean equals(Object other) {
+        if (other instanceof FrozenBloomFilter) {
+            return Arrays.equals( getBits(), ((FrozenBloomFilter) other).getBits());
+        }
+        return false;
     }
+
 }

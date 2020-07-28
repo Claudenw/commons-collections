@@ -25,13 +25,13 @@ import org.apache.commons.collections4.bloomfilter.hasher.Shape;
 /**
  * Test all the default implementations of the BloomFilter in {@link AbstractBloomFilter}.
  */
-public class DefaultBloomFilterMethodsTest extends AbstractBloomFilterTest {
+public class DefaultBloomFilterMethodsTest extends AbstractUpdatableBloomFilterTest {
 
     /**
      * A testing class that implements only the abstract methods from BloomFilter.
      *
      */
-    private static class BF extends AbstractBloomFilter {
+    private static class BF extends AbstractBloomFilter implements UpdatableBloomFilter{
 
         /**
          * The bits for this BloomFilter.
@@ -85,15 +85,16 @@ public class DefaultBloomFilterMethodsTest extends AbstractBloomFilterTest {
             hasher.iterator(getShape()).forEachRemaining((IntConsumer) bitSet::set);
             return true;
         }
+
     }
 
     @Override
-    protected AbstractBloomFilter createEmptyFilter(final Shape shape) {
+    protected UpdatableBloomFilter createEmptyFilter(final Shape shape) {
         return new BF(shape);
     }
 
     @Override
-    protected AbstractBloomFilter createFilter(final Hasher hasher, final Shape shape) {
+    protected UpdatableBloomFilter createFilter(final Hasher hasher, final Shape shape) {
         return new BF(hasher, shape);
     }
 }

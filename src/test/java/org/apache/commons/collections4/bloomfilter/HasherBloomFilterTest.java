@@ -32,7 +32,7 @@ import java.util.PrimitiveIterator.OfInt;
 /**
  * Tests the {@link HasherBloomFilter}.
  */
-public class HasherBloomFilterTest extends AbstractBloomFilterTest {
+public class HasherBloomFilterTest extends AbstractUpdatableBloomFilterTest {
 
     /**
      * Tests that the constructor works correctly.
@@ -49,7 +49,7 @@ public class HasherBloomFilterTest extends AbstractBloomFilterTest {
     }
 
     @Override
-    protected AbstractBloomFilter createEmptyFilter(final Shape shape) {
+    protected UpdatableBloomFilter createEmptyFilter(final Shape shape) {
         return new HasherBloomFilter(shape);
     }
 
@@ -74,7 +74,7 @@ public class HasherBloomFilterTest extends AbstractBloomFilterTest {
      */
     @Test
     public void getBitsTest_LowestBitOnly() {
-        BloomFilter filter = createEmptyFilter(shape);
+        UpdatableBloomFilter filter = createEmptyFilter(shape);
         // Set the lowest bit index only.
         filter.merge(new Hasher() {
             @Override

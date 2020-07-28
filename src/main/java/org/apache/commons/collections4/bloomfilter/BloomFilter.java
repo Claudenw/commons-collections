@@ -84,37 +84,16 @@ public interface BloomFilter {
      */
     boolean contains(Hasher hasher);
 
-    // Modification Operations
-
     /**
-     * Merges the specified Bloom filter into this Bloom filter. Specifically all bit indexes
-     * that are enabled in the {@code other} filter will be enabled in this filter.
+     * Determines if the bloom filter is "full". Full is defined as having no unset
+     * bits.
      *
-     * <p>Note: This method should return {@code true} even if no additional bit indexes were
-     * enabled. A {@code false} result indicates that this filter is not ensured to contain
-     * the {@code other} Bloom filter.
-     *
-     * @param other the other Bloom filter
-     * @return true if the merge was successful
-     * @throws IllegalArgumentException if the shape of the other filter does not match
-     * the shape of this filter
+     * @return true if the filter is full.
      */
-    boolean merge(BloomFilter other);
+    default boolean isFull() {
+        return cardinality() == getShape().getNumberOfBits();
+    }
 
-    /**
-     * Merges the specified decomposed Bloom filter into this Bloom filter. Specifically all
-     * bit indexes that are identified by the {@code hasher} will be enabled in this filter.
-     *
-     * <p>Note: This method should return {@code true} even if no additional bit indexes were
-     * enabled. A {@code false} result indicates that this filter is not ensured to contain
-     * the specified decomposed Bloom filter.
-     *
-     * @param hasher the hasher to provide the indexes
-     * @return true if the merge was successful
-     * @throws IllegalArgumentException if the hasher cannot generate indices for the shape of
-     * this filter
-     */
-    boolean merge(Hasher hasher);
 
     // Counting Operations
 

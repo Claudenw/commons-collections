@@ -35,7 +35,7 @@ import org.apache.commons.collections4.bloomfilter.hasher.Shape;
  * implementations be used.
  * @since 4.5
  */
-public class HasherBloomFilter extends AbstractBloomFilter {
+public class HasherBloomFilter extends AbstractBloomFilter implements UpdatableBloomFilter{
     /** The bit representation for an empty Bloom filter. */
     private static final long[] EMPTY = new long[0];
 

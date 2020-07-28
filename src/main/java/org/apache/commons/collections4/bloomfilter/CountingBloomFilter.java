@@ -52,7 +52,7 @@ import org.apache.commons.collections4.bloomfilter.hasher.Hasher;
  *
  * @since 4.5
  */
-public interface CountingBloomFilter extends BloomFilter {
+public interface CountingBloomFilter extends UpdatableBloomFilter {
 
     /**
      * Represents an operation that accepts an {@code <index, count>} pair representing

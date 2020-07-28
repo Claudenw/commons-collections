@@ -28,7 +28,7 @@ import org.apache.commons.collections4.bloomfilter.hasher.Shape;
  * implementation and should work well for most Bloom filters.
  * @since 4.5
  */
-public class BitSetBloomFilter extends AbstractBloomFilter {
+public class BitSetBloomFilter extends AbstractBloomFilter implements UpdatableBloomFilter {
 
     /**
      * The bitSet that defines this BloomFilter.
